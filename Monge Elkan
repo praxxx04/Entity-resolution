@@ -1,0 +1,22 @@
+# Entity-resolution
+Codes used for standardizing dataframes
+#install.packages("stringdist")#install.packages("stringr")library(stringdist)library(stringr)
+employee <- c('John Doe- //','Peter// Gynn\\','Jolie--_"/? $ Hope','Prakhar - ) Srivastava **', '+Nitesh ,Jain//', '\\Cosmos ! @ Baby')salary <- c(21000, 23400, 26800, 980000, 100000, 34000)manager <- c('Jhonny Do', 'Pedro Gin','Julie Horn', 'Shrivastava Prakriti', 'Antra Jian', 'Babe Cosmic')
+employ.data <- data.frame(employee, salary, manager, stringsAsFactors=FALSE)
+employ.data$employee2<- gsub("[$&+,:;=?@#|'<>.^*()%!-+_+'+/+\\+-]","",employ.data$employee)
+employ.data$employee3<- gsub("[[:punct:]]", "", employ.data$employee)
+employ.data$employee4 <- gsub("[[:punct:]]","",employ.data$employee)# Converting to upper case
+employ.data$manager <- toupper(employ.data$manager)
+employ.data$employee <- toupper(employ.data$employee)
+### Creating function for Monge Elkan similarity
+MongeElkan<- function (string1, string2, method) {  string1_count <- stringr::str_count(string1, "\\S+")  string2_count <- stringr::str_count(string2, "\\S+")  list1 <- matrix(nrow = string1_count, ncol = string2_count +                     1)  for (i in (1:string1_count)) {    for (j in (1:string2_count)) {      list1[i, j] <- (stringdist::stringsim(unlist(strsplit(string1,                                                             "\\s+"))[i], unlist(strsplit(string2, "\\s+"))[j],                                             method = method))    }    list1[i, j + 1] <- max(list1[i, ], na.rm = T)  }  mean(list1[, string2_count + 1])}
+employ.data$monge_lev <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "lv")
+employ.data$monge_jw <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "jw")
+employ.data$monge_jaccard <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "jaccard")
+employ.data$monge_dl <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "dl")
+employ.data$monge_sndx <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "soundex")
+employ.data$monge_qgrm <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "qgram")
+employ.data$monge_cosine <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "cosine")
+employ.data$monge_osa <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "osa")
+employ.data$monge_lcs <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "lcs")
+employ.data$monge_ham <- mapply(MongeElkan, employ.data$employee, employ.data$manager, "hamming")
